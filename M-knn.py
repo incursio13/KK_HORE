@@ -6,7 +6,8 @@ import operator
 import time
 
 def majority_vote(knn, labels):
-    knn = [k[0, 0] for k in knn]    
+    knn = [k[0, 0] for k in knn]   
+    #print knn
     dictionary = {}
     for idx in knn:
         if labels[idx] in dictionary.keys():
@@ -15,35 +16,44 @@ def majority_vote(knn, labels):
             dictionary[labels[idx]] = 1
     #print a
     result = sorted(dictionary.iteritems(), key=operator.itemgetter(1), reverse=True)[0][0]
-#    hasil= sorted(dictionary.iteritems(), key=operator.itemgetter(1), reverse=True)[0]
-#    hasil1= sorted(dictionary.iteritems(), key=operator.itemgetter(1), reverse=True)
-#    print hasil
-#    print hasil1
-#    print result
-#    print dictionary
     return result
 
-def doWork(train, test, labels_train, labels_test):
+def weight(knn, validity, labels):
+    knn = [k[0, 0] for k in knn] 
+    W=[]
+    for x in range(len(knn)):
+        W.append(validity[x]*1/(knn[x]+0.5))
+    #print np.array(W).argsort()[::-1][:1]
+    return labels[np.array(W).argsort()[::-1][:1]]
+    #return np.array(W).argsort()[::-1][:1]
+
+def doWork(train, test, labels_train, labels_test, validity):
     
-    for i in range(2,9):        
+    #for i in range(2,20):        
         #k = int(raw_input("Jumlah K : "))
-        k=i
+       # k=5
         train_mat = np.mat(train)
         result=[]
         start = time.time()
         for test_sample in test:
-            #hitung knn,lalu diurutkan
-            knn = np.argsort(np.sum(np.power(np.subtract(train_mat, test_sample), 2), axis=1), axis=0)[:k]
+            #hitung knn,lalu diurutkan, knn biasa 
+            #knn = np.argsort(np.sqrt(np.sum(np.power(np.subtract(train_mat, test_sample), 2), axis=1)), axis=0)[:k]
+            knn = np.sqrt(np.sum(np.power(np.subtract(train_mat, test_sample), 2), axis=1))
+            
             #hitung banyak tetangga terdekat berdasarkan nilai k
-            prediction = majority_vote(knn, labels_train)
+            #prediction = majority_vote(knn, labels_train)
+            
+            #pembobotan
+            prediction= weight(knn, validity, labels_train)
             result.append(prediction)      
         #hitung akurasi
+            
         correct = 0        
         for i in range(len(test)-1):
             if labels_test[i] == result[i]:
                 correct += 1
             #print "kelas : "+labels_test[i]+"   hasil :"+result[i]
-        print "k        : " + str(k)
+        #print "k        : " + str(k)
         print "Akurasi  : " + str((correct/float(len(test))) * 100.0) + " % " 
         print "Run time : " + str(time.time()-start)
 
@@ -55,12 +65,34 @@ def splitDataset(data, splitRatio):
     test.sort_index(inplace=True)
     return [train, test]
 
+def similarity(result, labels, idx_sample):
+    result = [k[0, 0] for k in result] 
+    sim_point=0
+    for x in result:
+        if labels[x]==labels[idx_sample]:
+            sim_point+=1
+    return sim_point
+
+def validity(train, labels_train):
+    train_mat = np.mat(train)
+    k=5   
+    print "k        : " + str(k)
+    count=0
+    valid=[]
+    for train_sample in train:
+        result=np.argsort(np.sqrt(np.sum(np.power(np.subtract(train_mat, train_sample), 2), axis=1)), axis=0)[1:(k+1)]
+        similar=float(similarity(result, labels_train, count))/k
+        valid.append(similar)
+        #print similar
+        count+=1
+    return valid
+
 if __name__ == '__main__':
     dataset=raw_input("Masukkan nama data train : ");
-    datatest=raw_input("Masukkan nama data test : ");
+    #datatest=raw_input("Masukkan nama data test : ");
     try :
-        train = pd.read_csv(dataset)
-        test = pd.read_csv(datatest)
+        train = pd.read_csv(dataset, header=None)
+        #test = pd.read_csv(datatest)
 
         #cek data kategorikal
         for i in range(len(train.ix[0])-1):
@@ -68,16 +100,18 @@ if __name__ == '__main__':
             if train[column_name].dtype==object:
                 train[column_name]=train[column_name].astype('category')
                 train[column_name]=train[column_name].cat.codes
-    
-        for i in range(len(test.ix[0])-1):
-            column_name= test.columns.values[i]
-            if test[column_name].dtype==object:
-                test[column_name]=test[column_name].astype('category')
-                test[column_name]=test[column_name].cat.codes
+                
+        #2 data set
+#        for i in range(len(test.ix[0])-1):
+#            column_name= test.columns.values[i]
+#            if test[column_name].dtype==object:
+#                test[column_name]=test[column_name].astype('category')
+#                test[column_name]=test[column_name].cat.codes
 
         #digunakan jika cuma 1 data set
         #splitRatio =float(raw_input("Split ratio (0-1): "));
-        #train, test= splitDataset(data, splitRatio)    
+        splitRatio=0.8333333334
+        train, test= splitDataset(train, splitRatio)    
         
         # memisahkan label dari data train
         labels_train = []
@@ -94,7 +128,9 @@ if __name__ == '__main__':
         train_fix = train_fix.as_matrix()
         test_fix = test_fix.as_matrix()
         
-        doWork(train_fix, test_fix, labels_train, labels_test)
+        validity_fix=validity(train_fix,labels_train)
+        doWork(train_fix, test_fix, labels_train, labels_test, validity_fix)
+        
         
     except IOError as e:
         print "Tidak ditemukan file"
