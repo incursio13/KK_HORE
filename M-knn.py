@@ -71,9 +71,11 @@ def splitDataset(data, splitRatio):
 def similarity(result, labels, idx_sample):
     result = [k[0, 0] for k in result] 
     sim_point=0
+    
     for x in result:
         if labels[x]==labels[idx_sample]:
             sim_point+=1
+    #print sim_point
     return sim_point
 
 def validity(train, labels_train, k):
@@ -87,6 +89,7 @@ def validity(train, labels_train, k):
         valid.append(similar)
         #print similar
         count+=1
+    
     return valid
 
 if __name__ == '__main__':
@@ -131,9 +134,9 @@ if __name__ == '__main__':
         train_fix = train_fix.as_matrix()
         test_fix = test_fix.as_matrix()
         
-        for k in range (1,10):
-            validity_fix=validity(train_fix,labels_train, k)
-            doWork(train_fix, test_fix, labels_train, labels_test, validity_fix)
+        #for k in range (1,10):
+        validity_fix=validity(train_fix,labels_train, 5)
+        doWork(train_fix, test_fix, labels_train, labels_test, validity_fix)
         
         
     except IOError as e:
