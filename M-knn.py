@@ -47,7 +47,7 @@ def doWork(train, test, labels_train, labels_test, validity):
             prediction= weight(knn, validity, labels_train)
             result.append(prediction)      
         #hitung akurasi
-            
+       # print result
         correct = 0        
         for i in range(len(test)-1):
             if labels_test[i] == result[i]:
@@ -63,6 +63,9 @@ def splitDataset(data, splitRatio):
     test= data.drop(split)
     train.sort_index(inplace=True)
     test.sort_index(inplace=True)
+   # print len(data)
+#    train=data[:int(len(data)*splitRatio)]
+#    test=data[int(len(data)*splitRatio)+1:]
     return [train, test]
 
 def similarity(result, labels, idx_sample):
@@ -73,9 +76,8 @@ def similarity(result, labels, idx_sample):
             sim_point+=1
     return sim_point
 
-def validity(train, labels_train):
+def validity(train, labels_train, k):
     train_mat = np.mat(train)
-    k=5   
     print "k        : " + str(k)
     count=0
     valid=[]
@@ -100,6 +102,7 @@ if __name__ == '__main__':
             if train[column_name].dtype==object:
                 train[column_name]=train[column_name].astype('category')
                 train[column_name]=train[column_name].cat.codes
+            
                 
         #2 data set
 #        for i in range(len(test.ix[0])-1):
@@ -128,8 +131,9 @@ if __name__ == '__main__':
         train_fix = train_fix.as_matrix()
         test_fix = test_fix.as_matrix()
         
-        validity_fix=validity(train_fix,labels_train)
-        doWork(train_fix, test_fix, labels_train, labels_test, validity_fix)
+        for k in range (1,10):
+            validity_fix=validity(train_fix,labels_train, k)
+            doWork(train_fix, test_fix, labels_train, labels_test, validity_fix)
         
         
     except IOError as e:
