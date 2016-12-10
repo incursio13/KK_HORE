@@ -94,10 +94,10 @@ def validity(train, labels_train, k):
 
 if __name__ == '__main__':
     dataset=raw_input("Masukkan nama data train : ");
-    #datatest=raw_input("Masukkan nama data test : ");
+    datatest=raw_input("Masukkan nama data test : ");
     try :
-        train = pd.read_csv(dataset, header=None)
-        #test = pd.read_csv(datatest)
+        train = pd.read_csv(dataset)
+        test = pd.read_csv(datatest)
 
         #cek data kategorikal
         for i in range(len(train.ix[0])-1):
@@ -108,16 +108,16 @@ if __name__ == '__main__':
             
                 
         #2 data set
-#        for i in range(len(test.ix[0])-1):
-#            column_name= test.columns.values[i]
-#            if test[column_name].dtype==object:
-#                test[column_name]=test[column_name].astype('category')
-#                test[column_name]=test[column_name].cat.codes
+        for i in range(len(test.ix[0])-1):
+            column_name= test.columns.values[i]
+            if test[column_name].dtype==object:
+                test[column_name]=test[column_name].astype('category')
+                test[column_name]=test[column_name].cat.codes
 
         #digunakan jika cuma 1 data set
         #splitRatio =float(raw_input("Split ratio (0-1): "));
-        splitRatio=0.8333333334
-        train, test= splitDataset(train, splitRatio)    
+#        splitRatio=0.8333333334
+#        train, test= splitDataset(train, splitRatio)    
         
         # memisahkan label dari data train
         labels_train = []
@@ -134,9 +134,9 @@ if __name__ == '__main__':
         train_fix = train_fix.as_matrix()
         test_fix = test_fix.as_matrix()
         
-        #for k in range (1,10):
-        validity_fix=validity(train_fix,labels_train, 5)
-        doWork(train_fix, test_fix, labels_train, labels_test, validity_fix)
+        for k in range (1,10):
+            validity_fix=validity(train_fix,labels_train, k)
+            doWork(train_fix, test_fix, labels_train, labels_test, validity_fix)
         
         
     except IOError as e:
