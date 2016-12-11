@@ -4,6 +4,11 @@ import random
 import operator
 import time
 
+def binary(K):
+    return ["{0:07b}".format(x) for x in K]
+    
+def desimal(K):
+    return [int(x,2) for x in K]
 
 def splitDataset(data, splitRatio):
     split=random.sample(data.index, (int)(splitRatio*len(data)))
@@ -29,6 +34,7 @@ def similarity(result, labels, idx_sample):
 
 def validity(train, labels_train, k, krom):
     fitness=[]
+    
     for x in krom:
         train_mat = np.mat(train)
         count=0
@@ -37,20 +43,79 @@ def validity(train, labels_train, k, krom):
             result=np.argsort(np.sqrt(np.sum(np.power(np.subtract(train_mat, train_sample), 2), axis=1)), axis=0)[1:(x+1)]
             similar=float(similarity(result, labels_train, count))/x
             valid.append(similar)
-            #print similar
             count+=1
-        fitness.append(valid)
-    return fitness
+        summ=sum(valid)/len(labels_train)
+        fitness.append(summ)
+    
+    cumulative=[]
+    prob=[]    
+    for x in range(len(krom)):
+        prob.append(fitness[x]/sum(fitness))
+        if x!=0:
+            cumulative.append(prob[x]+cumulative[x-1])        
+        else:
+            cumulative.append(prob[x])        
+    return prob, cumulative
 
-def rouletteWheel():
+def rouletteWheel(prob_fitness, cumulative, krom):
+    roulette=[]
+    Ran=[]
+    for x in range(len(cumulative)):
+        R=random.random()    
+        Ran.append(R)
+        for i in range(len(cumulative)):
+            if R<cumulative[i]:
+               roulette.append(krom[i])     
+               break
     
-    return None
+    return roulette, Ran
+
+def crossover(roulette, Krom):
+    R2=0
+    parent=[]
+    for x in range(int(len(Krom)*0.8)):
+        R1=random.randint(0,len(Krom)-1)
+        while R1==R2:
+            R1=random.randint(0,len(Krom)-1)
+        parent.append(Krom[R1])
+        R2=R1
+    bins=binary(parent)
+
+    child=[]    
+    for x in range(len(parent)):
+        if x%2==1:
+            continue
+        R1=random.randint(0,6)
+        male=bins[x][:R1]
+        female=bins[x+1][R1:]
+        child.append(male+female)
+        child.append(female+male)
+        
+    return child
+
+def fixing_dataset(train, test):
+    # memisahkan label dari data train
+    labels_train = []
+    for a in train.index:
+        labels_train.append(train.ix[a][len(train.columns)-1])        
+    train_fix=train.drop(train.columns[len(train.columns)-1],axis=1)
     
-def binary(K):
-    return ["{0:07b}".format(x) for x in K]
+    # memisahkan label dari data test
+    labels_test = []
+    for a in test.index:
+        labels_test.append(test.ix[a][len(test.columns)-1])        
+    test_fix=test.drop(test.columns[len(test.columns)-1],axis=1)
     
-def desimal(K):
-    return [int(K,2) for x in K]
+    train_fix = train_fix.as_matrix()
+    test_fix = test_fix.as_matrix()
+    
+#    k=3
+#    Krom=kromosom(train, k)
+#    binary_K=binary(Krom)
+    
+#    prob_fitness, cumulative=validity(train_fix,labels_train, k, Krom)
+#    return None
+    return train_fix, test_fix, labels_train, labels_test
 
 if __name__ == '__main__':
 #    dataset=raw_input("Masukkan nama data train : ")
@@ -77,32 +142,20 @@ if __name__ == '__main__':
     #splitRatio =float(raw_input("Split ratio (0-1): "));
     splitRatio=0.83333334
     train, test= splitDataset(train, splitRatio)    
-    ""
-    # memisahkan label dari data train
-    labels_train = []
-    for a in train.index:
-        labels_train.append(train.ix[a][len(train.columns)-1])        
-    train_fix=train.drop(train.columns[len(train.columns)-1],axis=1)
     
-    # memisahkan label dari data test
-    labels_test = []
-    for a in test.index:
-        labels_test.append(test.ix[a][len(test.columns)-1])        
-    test_fix=test.drop(test.columns[len(test.columns)-1],axis=1)
-    
-    train_fix = train_fix.as_matrix()
-    test_fix = test_fix.as_matrix()
-  
+    train_fix, test_fix, labels_train, labels_test= fixing_dataset(train, test)
+#    result=fixing_dataset(train, test)
 #        doWork(train_fix, test_fix, labels_train, labels_test)
     #GA start
     
-    k=3
+    k=5
     Krom=kromosom(train, k)
-    binary_K=binary(Krom)
-    
-    fitness=validity(train_fix,labels_train, k, Krom)
-        
-        
+    #binary_K=binary(Krom)
+    prob_fitness, cumulative=validity(train_fix,labels_train, k, Krom)
+    roulette, Ran=rouletteWheel(prob_fitness, cumulative, Krom)        
+    Krom=roulette
+    cross=crossover(roulette, Krom)
+    new_child=desimal(cross)
 #    except IOError as e:
 #        print "Tidak ditemukan file"
 #    except ValueError:
