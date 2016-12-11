@@ -92,17 +92,19 @@ def evolve(pop, target, retain=0.2, random_select=0.05, mutate=0.01):
 
 if __name__ == '__main__':
     # Example usage
-    a=population(3,5,0,100)
-#    target = 371
-#    p_count = 100
-#    i_length = 6
-#    i_min = 0
-#    i_max = 100
-#    p = population(p_count, i_length, i_min, i_max)
-#    fitness_history = [grade(p, target),]
-#    for i in xrange(100):
-#        p = evolve(p, target)
-#        fitness_history.append(grade(p, target))
-#    
-#    for datum in fitness_history:
-#       print datum"""
+#    a=population(3,5,0,100)
+    target = 371
+    p_count = 100
+    i_length = 6
+    i_min = 0
+    i_max = 100
+    p = population(p_count, i_length, i_min, i_max)
+    fitness_history = [grade(p, target),]
+    fiit=fitness_history
+    z=p
+    for i in xrange(100):
+        z = evolve(z, target)
+        fitness_history.append(grade(z, target))
+    
+    for datum in fitness_history:
+        print datum

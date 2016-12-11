@@ -4,8 +4,6 @@ import random
 import operator
 import time
 
-def binary(K):
-    return ["{0:07b}".format(x) for x in K]
 
 def splitDataset(data, splitRatio):
     split=random.sample(data.index, (int)(splitRatio*len(data)))
@@ -15,12 +13,48 @@ def splitDataset(data, splitRatio):
     test.sort_index(inplace=True)
     return [train, test]
 
-def kromosom(data):
-    population=3
+def kromosom(data, k):
+    population=k
     return [random.randint(1,125) for x in range(population)]
 
+def similarity(result, labels, idx_sample):
+    result = [k[0, 0] for k in result] 
+    sim_point=0
+    
+    for x in result:
+        if labels[x]==labels[idx_sample]:
+            sim_point+=1
+    #print sim_point
+    return sim_point
+
+def validity(train, labels_train, k, krom):
+    fitness=[]
+    for x in krom:
+        train_mat = np.mat(train)
+        count=0
+        valid=[]
+        for train_sample in train:
+            result=np.argsort(np.sqrt(np.sum(np.power(np.subtract(train_mat, train_sample), 2), axis=1)), axis=0)[1:(x+1)]
+            similar=float(similarity(result, labels_train, count))/x
+            valid.append(similar)
+            #print similar
+            count+=1
+        fitness.append(valid)
+    return fitness
+
+def rouletteWheel():
+    
+    return None
+    
+def binary(K):
+    return ["{0:07b}".format(x) for x in K]
+    
+def desimal(K):
+    return [int(K,2) for x in K]
+
 if __name__ == '__main__':
-    dataset=raw_input("Masukkan nama data train : ");
+#    dataset=raw_input("Masukkan nama data train : ")
+    dataset="iris.csv"
 #    datatest=raw_input("Masukkan nama data test : ");
   #  try :
     train = pd.read_csv(dataset, header=None)
@@ -43,7 +77,7 @@ if __name__ == '__main__':
     #splitRatio =float(raw_input("Split ratio (0-1): "));
     splitRatio=0.83333334
     train, test= splitDataset(train, splitRatio)    
-    """
+    ""
     # memisahkan label dari data train
     labels_train = []
     for a in train.index:
@@ -58,12 +92,15 @@ if __name__ == '__main__':
     
     train_fix = train_fix.as_matrix()
     test_fix = test_fix.as_matrix()
-    """
+  
 #        doWork(train_fix, test_fix, labels_train, labels_test)
     #GA start
-    K=kromosom(train)
-    binary_K=binary(K)
-        
+    
+    k=3
+    Krom=kromosom(train, k)
+    binary_K=binary(Krom)
+    
+    fitness=validity(train_fix,labels_train, k, Krom)
         
         
 #    except IOError as e:
