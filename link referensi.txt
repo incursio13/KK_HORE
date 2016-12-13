@@ -1,0 +1,4 @@
+https://dekasasmita.wordpress.com/2014/07/05/genetic-algorithm/
+http://www.academia.edu/8751772/IMPLEMENTASI_REAL-CODED_GENETIC_ALGORITHMS_MENGGUNAKAN_METODE_SELEKSI_ROULETTE_WHEEL
+http://lethain.com/genetic-algorithms-cool-name-damn-simple/
+https://gist.github.com/bellbind/741853
