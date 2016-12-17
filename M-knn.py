@@ -7,7 +7,6 @@ import time
 
 def majority_vote(knn, labels):
     knn = [k[0, 0] for k in knn]   
-    #print knn
     dictionary = {}
     for idx in knn:
         if labels[idx] in dictionary.keys():
@@ -23,39 +22,27 @@ def weight(knn, validity, labels):
     W=[]
     for x in range(len(knn)):
         W.append(validity[x]*1/(knn[x]+0.5))
-    #print np.array(W).argsort()[::-1][:1]
     return labels[np.array(W).argsort()[::-1][:1]]
-    #return np.array(W).argsort()[::-1][:1]
 
 def doWork(train, test, labels_train, labels_test, validity):
-    
-    #for i in range(2,20):        
-        #k = int(raw_input("Jumlah K : "))
-       # k=5
-        train_mat = np.mat(train)
-        result=[]
-        start = time.time()
-        for test_sample in test:
-            #hitung knn,lalu diurutkan, knn biasa 
-            #knn = np.argsort(np.sqrt(np.sum(np.power(np.subtract(train_mat, test_sample), 2), axis=1)), axis=0)[:k]
-            knn = np.sqrt(np.sum(np.power(np.subtract(train_mat, test_sample), 2), axis=1))
-            
-            #hitung banyak tetangga terdekat berdasarkan nilai k
-            #prediction = majority_vote(knn, labels_train)
-            
-            #pembobotan
-            prediction= weight(knn, validity, labels_train)
-            result.append(prediction)      
-        #hitung akurasi
-       # print result
-        correct = 0        
-        for i in range(len(test)-1):
-            if labels_test[i] == result[i]:
-                correct += 1
-            #print "kelas : "+labels_test[i]+"   hasil :"+result[i]
-        #print "k        : " + str(k)
-        print "Akurasi  : " + str((correct/float(len(test))) * 100.0) + " % " 
-        print "Run time : " + str(time.time()-start)
+    train_mat = np.mat(train)
+    result=[]
+    start = time.time()
+    for test_sample in test:
+        #hitung knn,lalu diurutkan, knn biasa 
+        knn = np.sqrt(np.sum(np.power(np.subtract(train_mat, test_sample), 2), axis=1))
+        
+        #pembobotan
+        prediction= weight(knn, validity, labels_train)
+        result.append(prediction)      
+
+    correct = 0        
+    for i in range(len(test)-1):
+        if labels_test[i] == result[i]:
+            correct += 1
+
+    print "Akurasi  : " + str((correct/float(len(test))) * 100.0) + " % " 
+    print "Run time : " + str(time.time()-start)
 
 def splitDataset(data, splitRatio):
     split=random.sample(data.index, (int)(splitRatio*len(data)))
@@ -93,11 +80,13 @@ def validity(train, labels_train, k):
     return valid
 
 if __name__ == '__main__':
-    dataset=raw_input("Masukkan nama data train : ");
-    datatest=raw_input("Masukkan nama data test : ");
+#    dataset=raw_input("Masukkan nama data train : ");
+#    datatest=raw_input("Masukkan nama data test : ");
+    dataset="train_norm.csv"
+    datatest="test_norm.csv"
     try :
-        train = pd.read_csv(dataset)
-        test = pd.read_csv(datatest)
+        train = pd.read_csv("train_norm.csv")
+        test = pd.read_csv("test_norm.csv")
 
         #cek data kategorikal
         for i in range(len(train.ix[0])-1):
@@ -134,10 +123,13 @@ if __name__ == '__main__':
         train_fix = train_fix.as_matrix()
         test_fix = test_fix.as_matrix()
         
+        k=5
+#        a=euclid_train(train_fix,labels_train, k)
         for k in range (1,10):
             validity_fix=validity(train_fix,labels_train, k)
             doWork(train_fix, test_fix, labels_train, labels_test, validity_fix)
-        
+#        validity_fix=0
+#        doWork(train_fix, test_fix, labels_train, labels_test, validity_fix)
         
     except IOError as e:
         print "Tidak ditemukan file"

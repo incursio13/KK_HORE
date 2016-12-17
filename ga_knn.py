@@ -1,30 +1,43 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Dec 18 01:49:33 2016
+
+@author: incr
+"""
+
 import numpy as np
 import pandas as pd
 import random
+import operator
     
-def weight(knn, validity):
-    knn = [k[0, 0] for k in knn] 
-    W=[]
-    for x in range(len(knn)):
-        W.append(validity[x]*1/(knn[x]+0.5))
+def majority_vote(knn, labels):
+    knn = [k[0, 0] for k in knn]    
+    dictionary = {}
+    for idx in knn:
+        if labels[idx] in dictionary.keys():
+            dictionary[labels[idx]] = dictionary[labels[idx]] + 1
+        else:
+            dictionary[labels[idx]] = 1
+    
+    result = sorted(dictionary.iteritems(), key=operator.itemgetter(1), reverse=True)[0][0]
+    return result
 
-    return labels_train[np.array(W).argsort()[::-1][:1]]
-
-
-def doWork(validity):
+def doWork(k):
     result=[]
+
     for test_sample in test_fix:
-        knn = np.sqrt(np.sum(np.power(np.subtract(train_fix, test_sample), 2), axis=1))           
-        #pembobotan
-        prediction= weight(knn, validity,)
+        knn = np.argsort(np.sqrt(np.sum(np.power(np.subtract(train_fix, test_sample), 2), axis=1)), axis=0)[:k]
+        #hitung banyak tetangga terdekat berdasarkan nilai k
+        
+        prediction = majority_vote(knn, labels_train)
         result.append(prediction)      
     #hitung akurasi
     correct = 0        
     for i in range(len(test)-1):
         if labels_test[i] == result[i]:
             correct += 1
-            
-    return correct/float(len(labels_test)) 
+
+    return correct/float(len(labels_test))
 
 def binary(parent, length):
     biner=[]
@@ -50,38 +63,15 @@ def kromosom():
     population=k
     return [random.randint(1,125) for x in range(population)]
 
-def similarity(result, idx_sample):
-    result = [k[0, 0] for k in result] 
-    sim_point=0
-    
-    for x in result:
-        if labels_train[x]==labels_train[idx_sample]:
-            sim_point+=1
-    #print sim_point
-    return sim_point
-
-def validity(x):
-    valid=[]
-    count=0
-    for train_sample in train_fix:
-        result=np.argsort(np.sum(np.power(np.subtract(train_fix, train_sample), 2), axis=1), axis=0)[1:(x+1)]
-        similar=float(similarity(result, count))/x
-        valid.append(similar)
-        count+=1
-    return valid
-
 def cumulatived():
-    fitness=[]
+    fit=[]
     for x in Krom:
-        
-        valid=validity(x)
-        summ=sum(valid)/len(labels_train)
-        fitness.append(summ)
+        fit.append(doWork(x))
     
     cumulative=[]
     prob=[]    
     for x in range(len(Krom)):
-        prob.append(fitness[x]/sum(fitness))
+        prob.append(fit[x]/sum(fit))
         if x!=0:
             cumulative.append(prob[x]+cumulative[x-1])        
         else:
@@ -148,6 +138,8 @@ def fixing_dataset(train, test):
     
     train_fix = np.mat(train_fix)
     test_fix = np.mat(test_fix)
+#    train_fix.astype(float)
+#    test_fix.astype(float)    
     
     return train_fix, test_fix, labels_train, labels_test
 
@@ -194,9 +186,8 @@ if __name__ == '__main__':
         new_child=desimal(cross)
     
     for x in Krom[:k]:
-        validity_fix=validity(x)
         print "k        : " + str(x)
-        correct= doWork(validity_fix)
+        correct= doWork(x)
         print "Akurasi  : " + str(correct * 100.0) + " % " 
         
 #    except IOError as e:
