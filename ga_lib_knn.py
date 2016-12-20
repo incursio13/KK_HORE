@@ -128,44 +128,48 @@ if __name__ == '__main__':
     dataset="train_norm.csv"
     datatest="test_norm.csv"
 #    datatest=raw_input("Masukkan nama data test : ");
-  #  try :
-    train = pd.read_csv(dataset)
-    test = pd.read_csv(datatest)
-
-    for i in range(len(train.ix[0])-1):
-        column_name= train.columns.values[i]
-        if train[column_name].dtype==object:
-            train[column_name]=train[column_name].astype('category')
-            train[column_name]=train[column_name].cat.codes
-
-    for i in range(len(test.ix[0])-1):
-        column_name= test.columns.values[i]
-        if test[column_name].dtype==object:
-            test[column_name]=test[column_name].astype('category')
-            test[column_name]=test[column_name].cat.codes 
+    try :
+        train = pd.read_csv(dataset)
+        test = pd.read_csv(datatest)
     
-    train_fix, test_fix, labels_train, labels_test= fixing_dataset()
-
-    k=10
-    Krom=kromosom()
-
-    new_child=[]
-    for x in range(1,101):
-        print "loop = "+str(x)
-        Krom=Krom[:k]+new_child
-        prob_fitness, cumulative=cumulatived()
-        roulette, Random_log=rouletteWheel()        
-        Krom=roulette
-        cross=crossover(len(labels_train), )
-        new_child=desimal(cross)
-#   
-    Krom=Krom[:k]+new_child
-    for x in Krom:     
-        print "k        : " + str(x)
-        correct = fitness(x)
-        print "Akurasi  : " + str(correct * 100.0) + " % " 
+        for i in range(len(train.ix[0])-1):
+            column_name= train.columns.values[i]
+            if train[column_name].dtype==object:
+                train[column_name]=train[column_name].astype('category')
+                train[column_name]=train[column_name].cat.codes
+    
+        for i in range(len(test.ix[0])-1):
+            column_name= test.columns.values[i]
+            if test[column_name].dtype==object:
+                test[column_name]=test[column_name].astype('category')
+                test[column_name]=test[column_name].cat.codes 
         
-#    except IOError as e:
-#        print "Tidak ditemukan file"
-#    except ValueError:
-#        print "Ratio salah"
+        train_fix, test_fix, labels_train, labels_test= fixing_dataset()
+    
+        k=10
+        Krom=kromosom()
+    
+        new_child=[]
+        for x in range(1,101):
+            print "loop = "+str(x)
+            Krom=Krom[:k]+new_child
+            prob_fitness, cumulative=cumulatived()
+            roulette, Random_log=rouletteWheel()        
+            Krom=roulette
+            cross=crossover(len(labels_train), )
+            new_child=desimal(cross)
+    #   
+        k_fixed=prob_fitness.index(max(prob_fitness))
+        print "k        : " + str(Krom[k_fixed])
+        correct = fitness(Krom[k_fixed])
+        print "Akurasi  : " + str(correct * 100.0) + " % "
+#        Krom=Krom[:k]+new_child
+#        for x in Krom:     
+#            print "k        : " + str(x)
+#            correct = fitness(x)
+#            print "Akurasi  : " + str(correct * 100.0) + " % " 
+        
+    except IOError as e:
+        print "Tidak ditemukan file"
+    except ValueError:
+        print "Ratio salah"

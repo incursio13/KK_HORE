@@ -125,7 +125,7 @@ if __name__ == '__main__':
         
         k=5
 #        a=euclid_train(train_fix,labels_train, k)
-        for k in range (1,10):
+        for k in range (95,99):
             validity_fix=validity(train_fix,labels_train, k)
             doWork(train_fix, test_fix, labels_train, labels_test, validity_fix)
 #        validity_fix=0
