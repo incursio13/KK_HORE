@@ -34,7 +34,7 @@ def splitDataset(data, splitRatio):
     return [train, test]
 
 def fitness(x):
-    nbrs = KNeighborsClassifier(n_neighbors=x, algorithm='ball_tree').fit(train_fix,labels_train)
+    nbrs = KNeighborsClassifier(n_neighbors=x, algorithm='auto').fit(train_fix,labels_train)
     y_pred=nbrs.predict(test_fix)
     
     correct=0
@@ -105,8 +105,12 @@ def crossover(length):
         
     return child
 
-def fixing_dataset():
+def fixing_dataset(train):
     # memisahkan label dari data train
+    if jumlah_dataset==2:
+        splitRatio=0.83333334
+        train, test= splitDataset(train, splitRatio)    
+    
     labels_train = []
     for a in train.index:
         labels_train.append(train.ix[a][len(train.columns)-1])        
@@ -124,33 +128,38 @@ def fixing_dataset():
     return train_fix, test_fix, labels_train, labels_test
 
 if __name__ == '__main__':
-#    dataset=raw_input("Masukkan nama data train : ")
-    dataset="train_norm.csv"
-    datatest="test_norm.csv"
-#    datatest=raw_input("Masukkan nama data test : ");
+    jumlah_dataset=int(raw_input("Jumlah dataset : "))
+    dataset=raw_input("Masukkan nama data train : ")
+#    dataset="train_norm.csv"
+#    datatest="test_norm.csv"
+#    dataset="iris.csv"
+    if jumlah_dataset==2:
+        datatest=raw_input("Masukkan nama data test : ");
     try :
         train = pd.read_csv(dataset)
-        test = pd.read_csv(datatest)
+        if jumlah_dataset==2:
+            test = pd.read_csv(datatest)
     
         for i in range(len(train.ix[0])-1):
             column_name= train.columns.values[i]
             if train[column_name].dtype==object:
                 train[column_name]=train[column_name].astype('category')
                 train[column_name]=train[column_name].cat.codes
-    
-        for i in range(len(test.ix[0])-1):
-            column_name= test.columns.values[i]
-            if test[column_name].dtype==object:
-                test[column_name]=test[column_name].astype('category')
-                test[column_name]=test[column_name].cat.codes 
+                
+        if jumlah_dataset==2:        
+            for i in range(len(test.ix[0])-1):
+                column_name= test.columns.values[i]
+                if test[column_name].dtype==object:
+                    test[column_name]=test[column_name].astype('category')
+                    test[column_name]=test[column_name].cat.codes 
         
-        train_fix, test_fix, labels_train, labels_test= fixing_dataset()
+        train_fix, test_fix, labels_train, labels_test= fixing_dataset(train)
     
         k=10
         Krom=kromosom()
     
         new_child=[]
-        for x in range(1,101):
+        for x in range(1,201):
             print "loop = "+str(x)
             Krom=Krom[:k]+new_child
             prob_fitness, cumulative=cumulatived()
@@ -158,7 +167,7 @@ if __name__ == '__main__':
             Krom=roulette
             cross=crossover(len(labels_train), )
             new_child=desimal(cross)
-    #   
+    
         k_fixed=prob_fitness.index(max(prob_fitness))
         print "k        : " + str(Krom[k_fixed])
         correct = fitness(Krom[k_fixed])

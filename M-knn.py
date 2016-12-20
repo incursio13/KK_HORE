@@ -22,7 +22,7 @@ def weight(knn, validity, labels):
     W=[]
     for x in range(len(knn)):
         W.append(validity[x]*1/(knn[x]+0.5))
-    return labels[np.array(W).argsort()[::-1][:1]]
+    return labels[np.array(W).argsort()[:-1][:1]]
 
 def doWork(train, test, labels_train, labels_test, validity):
     train_mat = np.mat(train)

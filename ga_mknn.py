@@ -8,7 +8,7 @@ def weight(knn, validity):
     for x in range(len(knn)):
         W.append(validity[x]*1/(knn[x]+0.5))
 
-    return labels_train[np.array(W).argsort()[::-1][:1]]
+    return labels_train[np.array(W).argsort()[:-1][:1]]
 
 
 def doWork(validity):
@@ -184,7 +184,7 @@ if __name__ == '__main__':
         Krom=kromosom()
         #valid=validity(train_fix,labels_train, Krom)
         new_child=[]
-        for x in range(1,10):
+        for x in range(1,101):
             print "loop = "+str(x)
             Krom=Krom[:k]+new_child
             prob_fitness, cumulative=cumulatived()
@@ -193,12 +193,16 @@ if __name__ == '__main__':
             cross=crossover(len(labels_train))
             new_child=desimal(cross)
         
-
-        for x in Krom[:k]:
-            validity_fix=validity(x)
-            print "k        : " + str(x)
-            correct= doWork(validity_fix)
-            print "Akurasi  : " + str(correct * 100.0) + " % " 
+        k_fixed=prob_fitness.index(max(prob_fitness))
+        print "k        : " + str(Krom[k_fixed])
+        validity_fix=validity(Krom[k_fixed])
+        correct = doWork(validity_fix)
+        print "Akurasi  : " + str(correct * 100.0) + " % "
+#        for x in Krom[:k]:
+#            validity_fix=validity(x)
+#            print "k        : " + str(x)
+#            correct= doWork(validity_fix)
+#            print "Akurasi  : " + str(correct * 100.0) + " % " 
         
     except IOError as e:
         print "Tidak ditemukan file"
