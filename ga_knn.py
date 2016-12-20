@@ -30,7 +30,7 @@ def fitness(k):
         
     #hitung akurasi
     correct = 0        
-    for i in range(len(test)):
+    for i in range(len(labels_test)):
         if labels_test[i] == result[i]:
             correct += 1
 
@@ -159,6 +159,8 @@ if __name__ == '__main__':
         train = pd.read_csv(dataset)
         if jumlah_dataset==2:
             test = pd.read_csv(datatest)
+        else:
+            test = ''
     
         #cek data kategorikal
         for i in range(len(train.ix[0])-1):
