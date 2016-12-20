@@ -9,10 +9,12 @@ import numpy as np
 import pandas as pd
 import random
 
+""" Menentukan individu awal dalam populasi """
 def kromosom():
     population=k
     return [random.randint(1,125) for x in range(population)]
     
+""" Mengubah nilai individu menjadi bilangan biner """            
 def binary(parent, length):
     biner=[]
     length="{0:0b}".format(length)
@@ -21,10 +23,12 @@ def binary(parent, length):
         temp="{0:0b}".format(x)
         biner.append(temp.zfill(length))
     return biner
-    
+
+""" Konversi biner ke desimal """    
 def desimal(biner):
     return [int(x,2) for x in biner]
 
+""" Memisahkan data latih dan data tes (opsional) """
 def splitDataset(data, splitRatio):
     split=random.sample(data.index, (int)(splitRatio*len(data)))
     train= data.ix[split]
@@ -33,7 +37,9 @@ def splitDataset(data, splitRatio):
     test.sort_index(inplace=True)
     return [train, test]
 
+""" Mencari nilai fitnes berdasarkan akurasi """
 def fitness(x):
+    # dilakukan kNN
     nbrs = KNeighborsClassifier(n_neighbors=x, algorithm='auto').fit(train_fix,labels_train)
     y_pred=nbrs.predict(test_fix)
     
@@ -43,6 +49,7 @@ def fitness(x):
             correct += 1
     return correct/float(len(labels_test))
 
+""" Mencari nilai probabilitas kumulatif nilai fitnes yang akan digunakan untuk roulette wheel """
 def cumulatived():
     fit=[]
     for x in Krom:
@@ -58,6 +65,7 @@ def cumulatived():
             cumulative.append(prob[x])        
     return prob, cumulative
 
+""" Seleksi roulette wheel """
 def rouletteWheel():
     roulette=[]
     Ran=[]
@@ -71,6 +79,7 @@ def rouletteWheel():
     
     return roulette, Ran
 
+""" Menghasilkan individu baru dengan metode crossover """
 def crossover(length):
     R2=0
     parent=[]
@@ -87,7 +96,6 @@ def crossover(length):
         if x%2==1:
             continue
         R1=random.randint(1,len(bins[x])-1)
-#        R1=len(bins[x])/2
         male=bins[x][:R1]
         female=bins[x+1][R1:]
         temp1=int(male,2)
@@ -105,9 +113,10 @@ def crossover(length):
         
     return child
 
+""" Memisahkan label class dari dataset """
 def fixing_dataset(train):
     # memisahkan label dari data train
-    if jumlah_dataset==2:
+    if jumlah_dataset==1:
         splitRatio=0.83333334
         train, test= splitDataset(train, splitRatio)    
     
@@ -130,9 +139,7 @@ def fixing_dataset(train):
 if __name__ == '__main__':
     jumlah_dataset=int(raw_input("Jumlah dataset : "))
     dataset=raw_input("Masukkan nama data train : ")
-#    dataset="train_norm.csv"
-#    datatest="test_norm.csv"
-#    dataset="iris.csv"
+    
     if jumlah_dataset==2:
         datatest=raw_input("Masukkan nama data test : ");
     try :
@@ -172,11 +179,7 @@ if __name__ == '__main__':
         print "k        : " + str(Krom[k_fixed])
         correct = fitness(Krom[k_fixed])
         print "Akurasi  : " + str(correct * 100.0) + " % "
-#        Krom=Krom[:k]+new_child
-#        for x in Krom:     
-#            print "k        : " + str(x)
-#            correct = fitness(x)
-#            print "Akurasi  : " + str(correct * 100.0) + " % " 
+
         
     except IOError as e:
         print "Tidak ditemukan file"
