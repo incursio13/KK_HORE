@@ -8,7 +8,7 @@ def weight(knn, validity):
     for x in range(len(knn)):
         W.append(validity[x]*1/(knn[x]+0.5))
 
-    return labels_train[np.array(W).argsort()[:-1][:1]]
+    return labels_train[np.array(W).argsort()[::-1][:1]]
 
 
 def doWork(validity):
@@ -20,7 +20,7 @@ def doWork(validity):
         result.append(prediction)      
     #hitung akurasi
     correct = 0        
-    for i in range(len(test)-1):
+    for i in range(len(test)):
         if labels_test[i] == result[i]:
             correct += 1
             
@@ -31,7 +31,7 @@ def binary(parent, length):
     length="{0:0b}".format(length)
     length=len(length)
     for x in range(len(parent)):
-        temp="{0:0b}".format(x)
+        temp="{0:0b}".format(parent[x])
         biner.append(temp.zfill(length))
     return biner
     
@@ -116,30 +116,34 @@ def crossover(length):
         if x%2==1:
             continue
         R1=random.randint(1,len(bins[x])-1)
-#        R1=len(bins[x])/2
         male=bins[x][:R1]
-        female=bins[x+1][R1:]
-        temp1=int(male,2)
-        temp2=int(female,2)
-        while temp1==0 and temp2==0:
+        female=bins[x][R1:]
+        male2=bins[x+1][:R1]
+        female2=bins[x+1][R1:]
+        while desimal(male+female2)==0 or desimal(male2+female)==0:
             R1=random.randint(0,len(bins[x])-1)
             male=bins[x][:R1]
-            female=bins[x+1][R1:]
-            temp1=int(male,2)
-            temp2=int(female,2)
-        if desimal(male+female)<length:
-            child.append(male+female)
-        if desimal(female+female)<length:
-            child.append(female+male)
+            female=bins[x][R1:]
+            male2=bins[x+1][:R1]
+            female2=bins[x+1][R1:]
+        if desimal(male+female2)<length:
+            child.append(male+female2)
+        if desimal(male2+female)<length:
+            child.append(male2+female)
         
     return child
 
 def fixing_dataset(train, test):
     # memisahkan label dari data train
+    if jumlah_dataset==1:
+        splitRatio=0.83333334
+        train, test= splitDataset(train, splitRatio)  
+        
     labels_train = []
     for a in train.index:
         labels_train.append(train.ix[a][len(train.columns)-1])        
     train_fix=train.drop(train.columns[len(train.columns)-1],axis=1)
+    
     # memisahkan label dari data test
     labels_test = []
     for a in test.index:
@@ -155,10 +159,12 @@ if __name__ == '__main__':
 #    dataset=raw_input("Masukkan nama data train : ")
     dataset="train_norm.csv"
     datatest="test_norm.csv"
+    jumlah_dataset=2
 #    datatest=raw_input("Masukkan nama data test : ");
     try :
         train = pd.read_csv(dataset)
-        test = pd.read_csv(datatest)
+        if jumlah_dataset==2:
+            test = pd.read_csv(datatest)
     
         #cek data kategorikal
         for i in range(len(train.ix[0])-1):
@@ -166,23 +172,18 @@ if __name__ == '__main__':
             if train[column_name].dtype==object:
                 train[column_name]=train[column_name].astype('category')
                 train[column_name]=train[column_name].cat.codes
-    
-        for i in range(len(test.ix[0])-1):
-            column_name= test.columns.values[i]
-            if test[column_name].dtype==object:
-                test[column_name]=test[column_name].astype('category')
-                test[column_name]=test[column_name].cat.codes
-    
-        #digunakan jika cuma 1 data set
-        #splitRatio =float(raw_input("Split ratio (0-1): "));
-        #splitRatio=0.83333334
-        #train, test= splitDataset(train, splitRatio)    
+        
+        if jumlah_dataset==2:
+            for i in range(len(test.ix[0])-1):
+                column_name= test.columns.values[i]
+                if test[column_name].dtype==object:
+                    test[column_name]=test[column_name].astype('category')
+                    test[column_name]=test[column_name].cat.codes  
         
         train_fix, test_fix, labels_train, labels_test= fixing_dataset(train, test)
     
         k=10
         Krom=kromosom()
-        #valid=validity(train_fix,labels_train, Krom)
         new_child=[]
         for x in range(1,101):
             print "loop = "+str(x)
@@ -198,11 +199,6 @@ if __name__ == '__main__':
         validity_fix=validity(Krom[k_fixed])
         correct = doWork(validity_fix)
         print "Akurasi  : " + str(correct * 100.0) + " % "
-#        for x in Krom[:k]:
-#            validity_fix=validity(x)
-#            print "k        : " + str(x)
-#            correct= doWork(validity_fix)
-#            print "Akurasi  : " + str(correct * 100.0) + " % " 
         
     except IOError as e:
         print "Tidak ditemukan file"

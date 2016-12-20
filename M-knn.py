@@ -2,27 +2,14 @@
 import numpy as np
 import pandas as pd
 import random
-import operator
 import time
-
-def majority_vote(knn, labels):
-    knn = [k[0, 0] for k in knn]   
-    dictionary = {}
-    for idx in knn:
-        if labels[idx] in dictionary.keys():
-            dictionary[labels[idx]] = dictionary[labels[idx]] + 1
-        else:
-            dictionary[labels[idx]] = 1
-    #print a
-    result = sorted(dictionary.iteritems(), key=operator.itemgetter(1), reverse=True)[0][0]
-    return result
 
 def weight(knn, validity, labels):
     knn = [k[0, 0] for k in knn] 
     W=[]
     for x in range(len(knn)):
         W.append(validity[x]*1/(knn[x]+0.5))
-    return labels[np.array(W).argsort()[:-1][:1]]
+    return labels[np.array(W).argsort()[::-1][:1]]
 
 def doWork(train, test, labels_train, labels_test, validity):
     train_mat = np.mat(train)
@@ -37,7 +24,7 @@ def doWork(train, test, labels_train, labels_test, validity):
         result.append(prediction)      
 
     correct = 0        
-    for i in range(len(test)-1):
+    for i in range(len(test)):
         if labels_test[i] == result[i]:
             correct += 1
 
@@ -89,7 +76,7 @@ if __name__ == '__main__':
         test = pd.read_csv("test_norm.csv")
 
         #cek data kategorikal
-        for i in range(len(train.ix[0])-1):
+        for i in range(len(train.ix[0])):
             column_name= train.columns.values[i]
             if train[column_name].dtype==object:
                 train[column_name]=train[column_name].astype('category')
@@ -97,7 +84,7 @@ if __name__ == '__main__':
             
                 
         #2 data set
-        for i in range(len(test.ix[0])-1):
+        for i in range(len(test.ix[0])):
             column_name= test.columns.values[i]
             if test[column_name].dtype==object:
                 test[column_name]=test[column_name].astype('category')
@@ -125,7 +112,7 @@ if __name__ == '__main__':
         
         k=5
 #        a=euclid_train(train_fix,labels_train, k)
-        for k in range (95,99):
+        for k in range (1,20):
             validity_fix=validity(train_fix,labels_train, k)
             doWork(train_fix, test_fix, labels_train, labels_test, validity_fix)
 #        validity_fix=0
